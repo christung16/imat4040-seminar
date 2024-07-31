@@ -13,18 +13,34 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var jsonData = JSON.parse(responseBody);\r",
+							"// Parse the response body\r",
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"// Check if the response contains a Token\r",
 							"if (jsonData.Token) {\r",
-							"  tests[\"Body has Token\"] = true;\r",
-							"  postman.setEnvironmentVariable(\"TOKEN\", jsonData[\"Token\"]); \r",
+							"    // Set the test result\r",
+							"    pm.test(\"Body has Token\", function () {\r",
+							"        pm.expect(jsonData).to.have.property(\"Token\");\r",
+							"    });\r",
+							"\r",
+							"    // Set the environment variable\r",
+							"    pm.environment.set(\"TOKEN\", jsonData.Token);\r",
+							"} else {\r",
+							"    // Set the test result\r",
+							"    pm.test(\"Body has no Token\", function () {\r",
+							"        pm.expect(jsonData).to.not.have.property(\"Token\");\r",
+							"    });\r",
+							"\r",
+							"    // Set the next request to null\r",
+							"    pm.execution.setNextRequest(null);\r",
 							"}\r",
-							"else {\r",
-							"  tests[\"Body has no Token\"] = false;\r",
-							"  postman.setNextRequest(\"null\");\r",
-							"}\r",
-							"postman.setNextRequest(\"Get Devices\")"
+							"\r",
+							"// Set the next request to \"Get Devices\"\r",
+							"pm.execution.setNextRequest(\"Get Devices\");\r",
+							""
 						],
-						"type": "text/javascript"
+						"type": "text/javascript",
+						"packages": {}
 					}
 				}
 			],
@@ -84,9 +100,20 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"var jsonData = JSON.parse(responseBody);",
-							"if (0<jsonData.response.length) {",
-							"    tests[\"Device list acquired\"] = true;",
+							"// Parse the response body as JSON",
+							"var jsonData = pm.response.json();",
+							"",
+							"// Check if the response contains a non-empty list",
+							"if (jsonData.response && jsonData.response.length > 0) {",
+							"    // Set the test result",
+							"    pm.test(\"Device list acquired\", function () {",
+							"        pm.expect(jsonData.response.length).to.be.above(0);",
+							"    });",
+							"} else {",
+							"    // Set the test result for failure",
+							"    pm.test(\"No Device list acquired\", function () {",
+							"        pm.expect(jsonData.response.length).to.be.above(0);",
+							"    });",
 							"}",
 							""
 						],
